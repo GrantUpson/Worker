@@ -1,13 +1,15 @@
 package upson.grant;
+
+import java.sql.*;
+
 /*
   @author Grant Upson : 385831
   @author Adib Shadman : 468684
- */
-import java.sql.*;
+*/
 
 public class Database
 {
-    private final String url = "jdbc:mysql://localhost:3306/tweets?serverTimezone=Australia/Melbourne";
+    private final String url = "jdbc:mysql://localhost:3306/tweet_worker?serverTimezone=Australia/Melbourne";
 
     private final String username;
     private final String password;
@@ -18,19 +20,18 @@ public class Database
         this.password = password;
     }
 
-
-    public void insertIntoDatabase(Tweet tweet)
+    public void insertTweet(Tweet tweet)
     {
         try(Connection connection = DriverManager.getConnection(url, this.username, this.password))
         {
-            String query = "Insert into tweets(tweet_id, sentiment, airline, message, date_created) values (?, ?, ?, ?, ?)";
+            String query = "Insert into tweet(uid, sentiment, airline, message, date_created) values (?, ?, ?, ?, ?)";
 
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, tweet.getTweetID());
+            statement.setLong(1, tweet.getUID());
             statement.setString(2, tweet.getSentiment());
             statement.setString(3, tweet.getAirline());
             statement.setString(4, tweet.getMessage());
-            statement.setString(5, tweet.getDateCreated());
+            statement.setTimestamp(5, tweet.getDateCreated());
 
             statement.executeUpdate();
         }
@@ -39,6 +40,4 @@ public class Database
             System.out.println("Error " + sqlException.getMessage());
         }
     }
-
-
 }

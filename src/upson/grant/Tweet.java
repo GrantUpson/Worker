@@ -1,43 +1,33 @@
 package upson.grant;
 
-import java.util.Date;
-public class Tweet
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+/*
+  @author Grant Upson : 385831
+  @author Adib Shadman : 468684
+*/
+
+public class Tweet implements Serializable
 {
-    private int tweetID ;
-    private String sentiment = " ";
-    private String airline = " ";
-    private String message = " ";
-    private Date dateCreated ;
+    private final long UID;
+    private final String sentiment;
+    private final String airline;
+    private final String message;
+    private final Timestamp dateCreated;
 
-     public Tweet(int tweetID, String sentiment, String airline, String message, Date dateCreated)
-     {
-         this.tweetID = tweetID;
-         this.sentiment = sentiment;
-         this.airline = airline;
-         this.message = message;
-         this. dateCreated = dateCreated;
-     }
+    public Tweet(long UID, String sentiment, String airline, String message, Timestamp created)
+    {
+        this.UID = UID;
+        this.sentiment = sentiment;
+        this.airline = airline;
+        this.message = message;
+        this.dateCreated = created;
+    }
 
-     public int getTweetID()
-     {
-        return tweetID;
-     }
-     public String getSentiment()
-     {
-         return sentiment;
-     }
-     public String getAirline()
-     {
-         return airline;
-     }
-     public String getMessage()
-     {
-         return message;
-     }
-     public Date getDateCreated()
-     {
-         return dateCreated;
-     }
-
-
+    public long getUID() { return UID; }
+    public String getSentiment() { return sentiment; }
+    public String getAirline() { return airline; }
+    public String getMessage() { return message; }
+    public Timestamp getDateCreated() { return dateCreated; }
 }

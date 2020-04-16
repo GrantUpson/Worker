@@ -1,10 +1,15 @@
 package upson.grant;
 
+/*
+  @author Grant Upson : 385831
+  @author Adib Shadman : 468684
+*/
+
 public class Worker
 {
     public void connect(String hostname, int tweetPort, int queryPort)
     {
-        new Thread(new TweetHandler(hostname,tweetPort)).start();
+        new Thread(new TweetHandler(hostname, tweetPort)).start();
         new Thread(new QueryHandler(hostname, queryPort)).start();
     }
 
