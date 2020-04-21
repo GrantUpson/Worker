@@ -5,7 +5,7 @@ package upson.grant;
   @author Adib Shadman : 468684
 */
 
-public class Query
+public class Query implements Comparable
 {
     public enum Type { MESSAGE, CONTAINS_WORD, FROM_AIRLINE, MOST_FREQUENT_CHARACTER; }
 
@@ -19,14 +19,16 @@ public class Query
     }
 
     private final int id;
+    private final int priority;
     private final Type type;
     private final String request;
     private Status currentStatus;
     private String result;
 
-    public Query(int id, Type type, String request)
+    public Query(int id, Type type, String request, int priority)
     {
         this.id = id;
+        this.priority = priority;
         this.type = type;
         this.request = request;
         this.currentStatus = Status.SUBMITTED;
@@ -34,6 +36,7 @@ public class Query
     }
 
     public int getID() { return id; }
+    public int getPriority() { return priority; }
     public Type getType() { return type; }
     public String getRequest() { return request; }
     public String getStatus() { return currentStatus.name(); }
@@ -41,4 +44,12 @@ public class Query
 
     public void updateStatus() { currentStatus = currentStatus.updateStatus(); }
     public void setResult(String result) { this.result = result; }
+
+    @Override
+    public int compareTo(Object o)
+    {
+        Query query = (Query)o;
+
+        return Integer.compare(priority, query.getPriority());
+    }
 }
