@@ -25,7 +25,7 @@ public class TweetHandler implements Runnable
     {
         try(Socket serverConnection = new Socket(hostname, port))
         {
-            Database tweetDatabase = new Database("grant", "Killthemall2");
+            Database tweetDatabase = new Database("USER", "PASS");
             ObjectInputStream newTweet = new ObjectInputStream(serverConnection.getInputStream());
 
             while (true)
