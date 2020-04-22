@@ -1,7 +1,9 @@
 package upson.grant;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 /*
@@ -13,6 +15,7 @@ public class TweetHandler implements Runnable
 {
     private String hostname;
     private int port;
+    private boolean connected;
 
     public TweetHandler(String hostname, int port)
     {
@@ -25,15 +28,26 @@ public class TweetHandler implements Runnable
     {
         try(Socket serverConnection = new Socket(hostname, port))
         {
-            Database tweetDatabase = new Database("USER", "PASS");
+            Database tweetDatabase = new Database("root", "");
             ObjectInputStream newTweet = new ObjectInputStream(serverConnection.getInputStream());
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(serverConnection.getOutputStream()));
+            connected = true;
 
-            while (true)
+            while (connected)
             {
                 try
                 {
                     Tweet tweet = (Tweet)newTweet.readObject();
-                    tweetDatabase.insertTweet(tweet);
+                    boolean success = tweetDatabase.insertTweet(tweet);
+                    writer.write(success + "\r\n");
+                    writer.flush();
+
+                    if(!success)
+                    {
+                        serverConnection.close();
+                        System.out.println("Database full. Disconnecting tweet connection from: " + serverConnection.getInetAddress());
+                        connected = false;
+                    }
                 }
                 catch(ClassNotFoundException cnfException)
                 {
@@ -43,7 +57,7 @@ public class TweetHandler implements Runnable
         }
         catch(IOException ioException)
         {
-            System.out.println("Error: " + ioException.getMessage());
+            System.out.println(ioException.getMessage());
         }
     }
 }

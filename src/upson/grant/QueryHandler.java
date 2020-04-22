@@ -33,81 +33,77 @@ public class QueryHandler implements Runnable
         {
             try(Socket serverConnection = new Socket(hostname, port))
             {
-                Database queryDatabase = new Database("USER", "PASS");
-                ObjectOutputStream sendQuery = new ObjectOutputStream(serverConnection.getOutputStream());
+                Database queryDatabase = new Database("root", "");
                 ObjectInputStream newQuery = new ObjectInputStream(serverConnection.getInputStream());
                 Query query = (Query)newQuery.readObject();
 
                switch(query.getType())
                {
                    case MESSAGE:
-                       String message = queryDatabase.findMessageByID(query.getRequest());
-                       sendQuery.writeObject(message);
+                       query.setResult(queryDatabase.findMessageByID(query.getRequest()));
                        break;
-
                    case CONTAINS_WORD:
-                       String containsWord = queryDatabase.findNumberOfTweets(query.getRequest());
-                       sendQuery.writeObject(containsWord);
+                       query.setResult(queryDatabase.findNumberOfTweetsContainingWord(query.getRequest()));
                        break;
-
                    case FROM_AIRLINE:
-                       String fromAirline = queryDatabase.numberofTweetsFromAirline(query.getRequest());
-                       sendQuery.writeObject(fromAirline);
+                       query.setResult(queryDatabase.findNumberOfTweetsFromAirline(query.getRequest()));
                        break;
-
                    case MOST_FREQUENT_CHARACTER:
-
-                       int stringSum = 0;
-                       int asciiValue;
-                       int stringLength;
-                       int mostFrequentCharacterValue;
-
-                       char mostFrequentCharacter=' ';
-                       char[] charArray;
-
-                       String messageCharacter = "";
-                       String messageFromTweetID = queryDatabase.mostFrequentCharacter(query.getRequest());
-                       String[] stringArray = messageFromTweetID.split("\\W+");
-                       String lowerCaseString = "";
-                       String wholeString = new String();
-
-                       for (int i = 0; i < stringArray.length; i++)
-                       {
-                           wholeString = wholeString + stringArray[i];
-
-                       }
-                        lowerCaseString = wholeString.toLowerCase();
-                        stringLength = lowerCaseString.length();
-                        charArray = lowerCaseString.toCharArray();
-
-                       for( int i = 0; i < charArray.length; i++)
-                       {
-                           asciiValue = charArray[i];
-                           stringSum = asciiValue + stringSum;
-                       }
-
-                       mostFrequentCharacterValue =(int)Math.ceil(stringSum/stringLength);
-                       mostFrequentCharacter = (char)mostFrequentCharacterValue;
-                       messageCharacter = Character.toString(mostFrequentCharacter);
-
-                       sendQuery.writeObject(messageCharacter);
-
+                       String message = queryDatabase.findMessageByID(query.getRequest());
+                       query.setResult(mostFrequentCharacter(message, queryDatabase));
                        break;
                }
 
-
-
-
+               ObjectOutputStream sendQuery = new ObjectOutputStream(serverConnection.getOutputStream());
+               sendQuery.writeObject(query);
+               sendQuery.flush();
+               sendQuery.reset();
             }
             catch(IOException ioe)
             {
-                System.out.println("Error: Cannot connect with the client" + ioe);
+                System.out.println("Error: " + ioe);
             }
             catch(ClassNotFoundException cnf)
             {
-                System.out.println("Error: Cannot connect with the client" + cnf);
+                System.out.println("Error: " + cnf);
             }
-
         }
+    }
+
+    public String mostFrequentCharacter(String message, Database queryDatabase)
+    {
+        int stringSum = 0;
+        int asciiValue;
+        int stringLength;
+        int mostFrequentCharacterValue;
+
+        char mostFrequentCharacter=' ';
+        char[] charArray;
+
+        String messageCharacter = "";
+        String[] stringArray = message.split("\\W+");
+        String lowerCaseString = "";
+        String wholeString = new String();
+
+        for (int i = 0; i < stringArray.length; i++)
+        {
+            wholeString += stringArray[i];
+        }
+
+        lowerCaseString = wholeString.toLowerCase();
+        stringLength = lowerCaseString.length();
+        charArray = lowerCaseString.toCharArray();
+
+        for( int i = 0; i < charArray.length; i++)
+        {
+            asciiValue = charArray[i];
+            stringSum = asciiValue + stringSum;
+        }
+
+        mostFrequentCharacterValue =(int)Math.ceil(stringSum/stringLength);
+        mostFrequentCharacter = (char)mostFrequentCharacterValue;
+        messageCharacter = Character.toString(mostFrequentCharacter);
+
+        return messageCharacter;
     }
 }
