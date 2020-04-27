@@ -9,25 +9,26 @@ import java.sql.*;
 
 public class Database
 {
-    private final String url = "jdbc:mysql://localhost:3306/tweet_worker?serverTimezone=Australia/Melbourne";
-    private final String username;
-    private final String password;
+    private final String URL = "jdbc:mysql://localhost:3306/tweet_worker?serverTimezone=Australia/Melbourne";
+    private final String USERNAME;
+    private final String PASSWORD;
+    private final int MAXIMUM_CAPACITY;
 
-    private int currentRows;
+    private int currentCapacity;
 
-    public Database(String username, String password)
+    public Database(String username, String password, int maximumCapacity)
     {
-        this.username = username;
-        this.password = password;
-        this.currentRows = 0;
+        this.USERNAME = username;
+        this.PASSWORD = password;
+        this.MAXIMUM_CAPACITY = maximumCapacity;
+        this.currentCapacity = 0;
     }
 
     public boolean insertTweet(Tweet tweet)
     {
-        final int MAX_ROWS = 50;
-        currentRows++;
+        currentCapacity++;
 
-        try(Connection connection = DriverManager.getConnection(url, this.username, this.password))
+        try(Connection connection = DriverManager.getConnection(URL, this.USERNAME, this.PASSWORD))
         {
             String query = "Insert into tweet(uid, sentiment, airline, message, date_created) values (?, ?, ?, ?, ?)";
 
@@ -45,19 +46,19 @@ public class Database
             System.out.println("Error " + sqlException.getMessage());
         }
 
-        return  currentRows != MAX_ROWS;
+        return  currentCapacity != MAXIMUM_CAPACITY;
     }
 
     public String findMessageByID(String ID)
     {
         String message = "";
 
-        try(Connection connection = DriverManager.getConnection(url, this.username, this.password))
+        try(Connection connection = DriverManager.getConnection(URL, this.USERNAME, this.PASSWORD))
         {
-            int tweetID = Integer.parseInt(ID);
+            long tweetID = Long.parseLong(ID);
             String query ="Select message from tweet where uid = ?";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, tweetID);
+            statement.setLong(1, tweetID);
 
             ResultSet result = statement.executeQuery();
 
@@ -79,7 +80,7 @@ public class Database
         int amount = 0;
         String message = "";
 
-        try(Connection connection = DriverManager.getConnection(url, this.username, this.password))
+        try(Connection connection = DriverManager.getConnection(URL, this.USERNAME, this.PASSWORD))
         {
            String query = "Select * from tweet where message like ?";
            PreparedStatement statement = connection.prepareStatement(query);
@@ -106,7 +107,7 @@ public class Database
         int amount = 0;
         String message = "";
 
-        try(Connection connection = DriverManager.getConnection(url, this.username, this.password))
+        try(Connection connection = DriverManager.getConnection(URL, this.USERNAME, this.PASSWORD))
         {
             String query = "Select * from tweet where airline like ?";
             PreparedStatement statement = connection.prepareStatement(query);
