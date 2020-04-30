@@ -12,22 +12,15 @@ public class Database
     private final String URL = "jdbc:mysql://localhost:3306/tweet_worker?serverTimezone=Australia/Melbourne";
     private final String USERNAME;
     private final String PASSWORD;
-    private final int MAXIMUM_CAPACITY;
 
-    private int currentCapacity;
-
-    public Database(String username, String password, int maximumCapacity)
+    public Database(String username, String password)
     {
         this.USERNAME = username;
         this.PASSWORD = password;
-        this.MAXIMUM_CAPACITY = maximumCapacity;
-        this.currentCapacity = 0;
     }
 
-    public boolean insertTweet(Tweet tweet)
+    public void insertTweet(Tweet tweet)
     {
-        currentCapacity++;
-
         try(Connection connection = DriverManager.getConnection(URL, this.USERNAME, this.PASSWORD))
         {
             String query = "Insert into tweet(uid, sentiment, airline, message, date_created) values (?, ?, ?, ?, ?)";
@@ -45,8 +38,6 @@ public class Database
         {
             System.out.println("Error " + sqlException.getMessage());
         }
-
-        return  currentCapacity != MAXIMUM_CAPACITY;
     }
 
     public String findMessageByID(String ID)
