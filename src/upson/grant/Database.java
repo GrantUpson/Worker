@@ -42,7 +42,7 @@ public class Database
 
     public String findMessageByID(String ID)
     {
-        String message = "";
+        String message = "Invalid tweet ID";
 
         try(Connection connection = DriverManager.getConnection(URL, this.USERNAME, this.PASSWORD))
         {
@@ -69,7 +69,7 @@ public class Database
     public String findNumberOfTweetsContainingWord(String word)
     {
         int amount = 0;
-        String message = "";
+        String message = "0";
 
         try(Connection connection = DriverManager.getConnection(URL, this.USERNAME, this.PASSWORD))
         {

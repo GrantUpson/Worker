@@ -89,8 +89,18 @@ public class Worker
                 break;
             case MOST_FREQUENT_CHARACTER:
                 String message = database.findMessageByID(query.getRequest());
-                query.setResult(mostFrequentCharacter(message));
+
+                if(!message.equalsIgnoreCase("Invalid tweet ID"))
+                {
+                    query.setResult(mostFrequentCharacter(message));
+                }
+                else
+                {
+                    query.setResult(message);
+                }
+
                 query.setBill(5.00);
+
                 break;
         }
 
@@ -111,7 +121,7 @@ public class Worker
                 currentCapacity++;
                 database.insertTweet(tweet);
                 tweet.setResult("Success");
-                System.out.println("Tweet stored.");
+                //System.out.println("Tweet stored.");
             }
         }
         else
@@ -123,7 +133,7 @@ public class Worker
     public void retrieveHeartbeat(Heartbeat heartbeat)
     {
         heartbeat.setResult("Heartbeat Good [Testing] for worker of ID: " + heartbeat.getWorkerID());
-        //TODO
+        System.out.println("Set Heartbeat Result");
     }
 
     public String mostFrequentCharacter(String message)
