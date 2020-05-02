@@ -42,7 +42,7 @@ public class Worker
 
             if(initializingMessage instanceof Capacity)
             {
-                database = new Database("grant", "Killthemall2");
+                database = new Database("root", "");
                 maxCapacity = ((Capacity) initializingMessage).getMaximumCapacity();
             }
 
