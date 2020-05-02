@@ -58,9 +58,13 @@ public class Database
                 message = result.getString(1);
             }
         }
-        catch( SQLException sqlException )
+        catch(SQLException sqlException)
         {
             System.out.println("Error: " + sqlException.getMessage());
+        }
+        catch(NumberFormatException numberFormatException)
+        {
+
         }
 
         return message;

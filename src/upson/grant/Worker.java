@@ -1,71 +1,97 @@
 package upson.grant;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.Random;
+
 /*
   @author Grant Upson : 385831
   @author Adib Shadman : 468684
 */
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-
 public class Worker
 {
-    private final int RECONNECTION_ATTEMPTS = 3;
+    private final int RECONNECTION_ATTEMPTS = 5;
 
     private final String hostname;
     private final int port;
-    private int reconnectionAttempts;
+    private int currentReconnectionAttempts;
     private int maxCapacity;
     private int currentCapacity;
     private boolean notified;
+    private boolean reconnect;
+    private String id;
 
     public Worker(String hostname, int port)
     {
         this.hostname = hostname;
         this.port = port;
-        reconnectionAttempts = 0;
+        currentReconnectionAttempts = 1;
         currentCapacity = 0;
+        reconnect = true;
+        this.id = generateID();
     }
 
     public void connect()
     {
-        try(Socket serverConnection = new Socket(hostname, port);
-            ObjectOutputStream messageSender = new ObjectOutputStream(serverConnection.getOutputStream());
-            ObjectInputStream messageReceiver = new ObjectInputStream(serverConnection.getInputStream()))
+        while(reconnect)
         {
-            Database database = null;
-            reconnectionAttempts = 0;
-
-            Message initializingMessage = (Message)messageReceiver.readObject();
-
-            if(initializingMessage instanceof Capacity)
+            try(Socket serverConnection = new Socket(hostname, port);
+                ObjectOutputStream messageSender = new ObjectOutputStream(serverConnection.getOutputStream());
+                ObjectInputStream messageReceiver = new ObjectInputStream(serverConnection.getInputStream()))
             {
-                database = new Database("root", "");
-                maxCapacity = ((Capacity) initializingMessage).getMaximumCapacity();
-            }
+                Database database = null;
+                currentReconnectionAttempts = 1;
 
-            while(true)
-            {
-                Message message = (Message)messageReceiver.readObject();
-
-                if(message instanceof Query) { executeQuery((Query)message, database); }
-                if(message instanceof Tweet) { storeTweet((Tweet)message, database); }
-                if(message instanceof Heartbeat) { retrieveHeartbeat((Heartbeat)message); }
-
-                messageSender.writeObject(message);
+                messageSender.writeObject(new IDConfirmation(0, 0, id));
                 messageSender.flush();
-            }
-        }
-        catch(IOException | ClassNotFoundException exception)
-        {
-            System.out.println("Connection has been closed: " + exception.getMessage());
 
-           // if(reconnectionAttempts < 5)
-            System.out.println("Attempting to reconnect, attempt: " + reconnectionAttempts);
-           // reconnectionAttempts++;
-           // connect();
+                Message initializingMessage = (Message)messageReceiver.readObject();
+
+                if(initializingMessage instanceof Capacity)
+                {
+                    database = new Database("root", "");
+                    maxCapacity = ((Capacity) initializingMessage).getMaximumCapacity();
+                }
+
+                while(true)
+                {
+                    Message message = (Message)messageReceiver.readObject();
+
+                    if(message instanceof Query) { executeQuery((Query)message, database); }
+                    if(message instanceof Tweet) { storeTweet((Tweet)message, database); }
+                    if(message instanceof Heartbeat) { retrieveHeartbeat((Heartbeat)message); }
+
+                    messageSender.writeObject(message);
+                    messageSender.flush();
+                }
+            }
+            catch(IOException | ClassNotFoundException exception)
+            {
+                System.out.println("Connection to the data server has been closed..");
+            }
+
+            if(currentReconnectionAttempts <= RECONNECTION_ATTEMPTS)
+            {
+                notified = false;
+                System.out.println("Attempting to reconnect, attempt: " + currentReconnectionAttempts);
+                currentReconnectionAttempts++;
+
+                try
+                {
+                    Thread.sleep(5000);
+                }
+                catch(InterruptedException interruptedException)
+                {
+                    System.out.println("Error: " + interruptedException.getMessage());
+                }
+            }
+            else
+            {
+                reconnect = false;
+            }
         }
     }
 
@@ -168,6 +194,14 @@ public class Worker
         }
 
         return Character.toString(maxChar);
+    }
+
+    public String generateID()
+    {
+        final int ID_LENGTH = 99999;
+        Random randomizer = new Random();
+
+        return String.valueOf(randomizer.nextInt(ID_LENGTH));
     }
 
     public static void main(String[] args)
