@@ -60,7 +60,7 @@ public class Worker
                 {
                     Message message = (Message)messageReceiver.readObject();
 
-                    if(message instanceof Query) { executeQuery((Query)message, database); }
+                    if(message instanceof Query) { executeQuery((Query)message, database); System.out.println("Received Query");}
                     if(message instanceof Tweet) { storeTweet((Tweet)message, database); }
                     if(message instanceof Heartbeat) { retrieveHeartbeat((Heartbeat)message); }
 
