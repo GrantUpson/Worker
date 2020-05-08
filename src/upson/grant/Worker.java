@@ -147,7 +147,7 @@ public class Worker
                 currentCapacity++;
                 database.insertTweet(tweet);
                 tweet.setResult("Success");
-                //System.out.println("Tweet stored.");
+                System.out.println("Tweet stored.");
             }
         }
         else
@@ -158,7 +158,9 @@ public class Worker
 
     public void retrieveHeartbeat(Heartbeat heartbeat)
     {
-        heartbeat.setResult("Heartbeat Good [Testing] for worker of ID: " + heartbeat.getWorkerID());
+        CPUMemInfo systemInfo = new CPUMemInfo();
+        heartbeat.setResult("\nHeartbeat results for worker of ID: " + heartbeat.getWorkerID() + "\n" + systemInfo.retrieveSystemInformation() + "\n");
+
         System.out.println("Set Heartbeat Result");
     }
 
